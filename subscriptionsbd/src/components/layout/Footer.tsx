@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Zap, Facebook, Instagram, Twitter, Mail, Phone, MapPin, MessageCircle, Shield, Truck, RefreshCw, Star } from "lucide-react";
 import { siteConfig } from "@/lib/data";
+import Image from "next/image";
 
 const footerLinks = {
   Products: [
@@ -57,16 +58,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-                <Zap size={22} className="text-white" fill="white" />
-              </div>
-              <div>
-                <span className="font-heading font-bold text-xl text-white block leading-none">
-                  Subscriptions BD
-                </span>
-              </div>
-            </Link>
+            <Link href="/" className="flex items-center gap-2.5 group">
+            <Image
+              src="/logo.jpg"
+              alt="Dexxozzbd Logo"
+              width={36}
+              height={36}
+              className="rounded-xl group-hover:scale-110 transition-transform"
+            />
+            <div className="leading-tight">
+              <span className="font-heading font-bold text-lg text-white block leading-none">Dexxozzbd</span>
+              <span className="text-brand-400 text-xs font-medium font-body">Premium Subscriptions</span>
+            </div>
+          </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 font-body">
               Bangladesh&apos;s most trusted digital subscription store. Get Netflix, ChatGPT, Spotify, and 200+ premium tools at the best prices — paid with bKash, Nagad, or Rocket.
             </p>
@@ -126,7 +130,7 @@ export default function Footer() {
       {/* Bottom */}
       <div className="border-t border-dark-600 py-5">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-xs font-body">
-          <p>© 2025 Subscriptions BD. All rights reserved.</p>
+          <p>© 2021 Dexxozzbd. All rights reserved.</p>
           <p>Payments via bKash · Nagad · Rocket · Bank Transfer</p>
         </div>
       </div>

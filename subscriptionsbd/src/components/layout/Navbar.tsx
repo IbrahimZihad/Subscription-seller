@@ -107,18 +107,18 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-  <Image
-    src="/logo.jpg"
-    alt="Dexxozzbd Logo"
-    width={36}
-    height={36}
-    className="rounded-xl group-hover:scale-110 transition-transform"
-  />
-  <div className="leading-tight">
-    <span className="font-heading font-bold text-lg text-white block leading-none">Dexxozzbd</span>
-    <span className="text-brand-400 text-xs font-medium font-body">Premium Subscriptions</span>
-  </div>
-</Link>
+            <Image
+              src="/logo.jpg"
+              alt="Dexxozzbd Logo"
+              width={36}
+              height={36}
+              className="rounded-xl group-hover:scale-110 transition-transform"
+            />
+            <div className="leading-tight">
+              <span className="font-heading font-bold text-lg text-white block leading-none">Dexxozzbd</span>
+              <span className="text-brand-400 text-xs font-medium font-body">Premium Subscriptions</span>
+            </div>
+          </Link>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
