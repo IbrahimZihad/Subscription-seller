@@ -272,4 +272,5 @@ export const siteConfig = {
   instagram: "https://instagram.com/subscriptionsbd",
   twitter: "https://twitter.com/subscriptionsbd",
   phone: "+880 1799-591300",
+  url: "https://localhost:3000",
 };

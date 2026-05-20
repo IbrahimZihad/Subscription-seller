@@ -1,8 +1,8 @@
 {
-  "/cart/page": "app/cart/page.js",
-  "/products/page": "app/products/page.js",
   "/page": "app/page.js",
   "/auth/login/page": "app/auth/login/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/admin-dashboard/page": "app/admin/admin-dashboard/page.js",
+  "/admin/manage-products/page": "app/admin/manage-products/page.js",
   "/admin/manage-orders/page": "app/admin/manage-orders/page.js"
 }

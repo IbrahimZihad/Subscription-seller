@@ -3,40 +3,47 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
-    // Allow login page through
-    if (pathname === "/admin/login") {
-      setVerified(true);
-      return;
-    }
-
     const token = localStorage.getItem("adminToken");
+
     if (!token) {
-      router.replace("/admin/login");
+      router.replace("/auth/login");
       return;
     }
 
-    // Verify token is still valid against the backend
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+    fetch(`${API_BASE}/auth/me`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
-        if (!data?.data?.role || !["admin", "moderator"].includes(data.data.role)) {
+        console.log("Auth check response:", data); // remove after debugging
+        const role = data?.user?.role;
+        if (!role || !["admin", "moderator"].includes(role)) {
           localStorage.removeItem("adminToken");
-          router.replace("/admin/login");
+          document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
+          router.replace("/auth/login");
         } else {
           setVerified(true);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Auth check failed:", err); // remove after debugging
         localStorage.removeItem("adminToken");
-        router.replace("/admin/login");
+        document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
+        router.replace("/auth/login");
       });
   }, [pathname, router]);
 

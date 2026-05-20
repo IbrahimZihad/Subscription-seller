@@ -12,14 +12,14 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
+
   description: siteConfig.description,
+
   keywords: [
-    // Core service keywords
     "subscription Bangladesh",
     "Netflix Bangladesh",
     "ChatGPT Bangladesh",
     "digital subscription BD",
-    // Expanded keywords
     "buy Netflix Bangladesh",
     "cheap Netflix BD",
     "Spotify Bangladesh",
@@ -34,13 +34,26 @@ export const metadata: Metadata = {
     "সাবস্ক্রিপশন বাংলাদেশ",
     "নেটফ্লিক্স বাংলাদেশ",
   ],
-  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+
+  authors: [
+    {
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+  ],
+
   creator: siteConfig.name,
   publisher: siteConfig.name,
-  metadataBase: new URL(siteConfig.url),
+
+  // FIXED
+  metadataBase: new URL(
+    siteConfig.url || "http://localhost:3000"
+  ),
+
   alternates: {
     canonical: "/",
   },
+
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -49,6 +62,7 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
+
     images: [
       {
         url: "/og-image.png",
@@ -58,6 +72,7 @@ export const metadata: Metadata = {
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
@@ -65,10 +80,12 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
     creator: "@yourTwitterHandle",
   },
+
   robots: {
     index: true,
     follow: true,
     nocache: false,
+
     googleBot: {
       index: true,
       follow: true,
@@ -78,13 +95,28 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+
   icons: {
     icon: [
       { url: "/favicon.ico" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      {
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
     ],
-    apple: [{ url: "/apple-touch-icon.png" }],
+
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+      },
+    ],
+
     other: [
       {
         rel: "mask-icon",
@@ -92,15 +124,21 @@ export const metadata: Metadata = {
       },
     ],
   },
-  manifest: "/site.webmanifest",
+
   category: "e-commerce",
+
   classification: "Digital Subscription Services",
+
   referrer: "origin-when-cross-origin",
+
   applicationName: siteConfig.name,
+
   generator: "Next.js",
+
   verification: {
     google: "YOUR_GOOGLE_SEARCH_CONSOLE_TOKEN",
   },
+
   other: {
     "geo.region": "BD",
     "geo.country": "Bangladesh",
