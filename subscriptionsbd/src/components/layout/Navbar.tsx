@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   ShoppingCart, Menu, X, Zap, Search,
   User, LogOut, LayoutDashboard, Package,
@@ -106,14 +107,18 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform glow-brand">
-              <Zap size={20} className="text-white" fill="white" />
-            </div>
-            <div className="leading-tight">
-              <span className="font-heading font-bold text-lg text-white block leading-none">Subscriptions</span>
-              <span className="text-brand-400 text-xs font-medium font-body">BD</span>
-            </div>
-          </Link>
+  <Image
+    src="/logo.jpg"
+    alt="Dexxozzbd Logo"
+    width={36}
+    height={36}
+    className="rounded-xl group-hover:scale-110 transition-transform"
+  />
+  <div className="leading-tight">
+    <span className="font-heading font-bold text-lg text-white block leading-none">Dexxozzbd</span>
+    <span className="text-brand-400 text-xs font-medium font-body">Premium Subscriptions</span>
+  </div>
+</Link>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
