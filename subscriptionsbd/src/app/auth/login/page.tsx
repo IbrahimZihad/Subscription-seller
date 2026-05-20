@@ -13,16 +13,19 @@ type Mode = "user" | "admin";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [mode, setMode]           = useState<Mode>("user");
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [showPw, setShowPw]       = useState(false);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
+  const [mode, setMode]         = useState<Mode>("user");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
 
   const saveAuth = (token: string, user: object, isAdmin: boolean) => {
     localStorage.setItem(isAdmin ? "adminToken" : "token", token);
     localStorage.setItem("authUser", JSON.stringify(user));
+    if (isAdmin) {
+      document.cookie = `adminToken=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+    }
     window.dispatchEvent(new Event("authChange"));
   };
 
@@ -51,23 +54,22 @@ export default function LoginPage() {
 
   // ── Admin email/password login ───────────────────────────────
   const adminLogin = async () => {
-  setLoading(true);
-  setError("");
-  try {
-    const data = await fetchAPI("/auth/admin-login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchAPI("/auth/admin-login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
-    saveAuth(data.token, data.user, true);
-    router.push("/admin/admin-dashboard");
-  } catch (e: unknown) {
-    // Show the real error from backend instead of generic message
-    setError(e instanceof Error ? e.message : "Invalid admin credentials.");
-  } finally {
-    setLoading(false);
-  }
-};
+      saveAuth(data.token, data.user, true);
+      router.push("/");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Invalid admin credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── User email/password login (via Firebase) ─────────────────
   const userEmailLogin = async () => {

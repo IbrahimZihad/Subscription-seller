@@ -11,12 +11,11 @@ import { useCart } from "@/hooks/useCart";
 import Topbar from "./Topbar";
 
 const navLinks = [
-  { href: "/",        label: "Home"     },
+  { href: "/",         label: "Home"     },
   { href: "/products", label: "Products" },
-  { href: "/blog",    label: "Blog"     },
-  { href: "/about",   label: "About"    },
-  { href: "/contact", label: "Contact"  },
-  { href: "/login",     label: "Login"      },
+  { href: "/blog",     label: "Blog"     },
+  { href: "/about",    label: "About"    },
+  { href: "/contact",  label: "Contact"  },
 ];
 
 const adminLinks = [
@@ -34,14 +33,14 @@ interface AuthUser {
 }
 
 export default function Navbar() {
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const [scrolled, setScrolled]       = useState(false);
+  const [mobileOpen, setMobileOpen]     = useState(false);
+  const [scrolled, setScrolled]         = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [authUser, setAuthUser]       = useState<AuthUser | null>(null);
-  const { totalItems, toggleCart }    = useCart();
-  const pathname  = usePathname();
-  const router    = useRouter();
-  const dropRef   = useRef<HTMLDivElement>(null);
+  const [authUser, setAuthUser]         = useState<AuthUser | null>(null);
+  const { totalItems }                  = useCart();
+  const pathname                        = usePathname();
+  const router                          = useRouter();
+  const dropRef                         = useRef<HTMLDivElement>(null);
 
   // scroll effect
   useEffect(() => {
@@ -56,7 +55,6 @@ export default function Navbar() {
     if (raw) {
       try { setAuthUser(JSON.parse(raw)); } catch { /* ignore */ }
     }
-    // listen for login/logout events dispatched by auth pages
     const onAuth = () => {
       const r = localStorage.getItem("authUser");
       setAuthUser(r ? JSON.parse(r) : null);
@@ -83,14 +81,14 @@ export default function Navbar() {
     localStorage.removeItem("authUser");
     localStorage.removeItem("token");
     localStorage.removeItem("adminToken");
+    document.cookie = "adminToken=; path=/; max-age=0; SameSite=Lax";
     setAuthUser(null);
     setDropdownOpen(false);
     window.dispatchEvent(new Event("authChange"));
     router.push("/");
   };
 
-  const isAdmin = authUser?.role === "admin" || authUser?.role === "moderator";
-
+  const isAdmin  = authUser?.role === "admin" || authUser?.role === "moderator";
   const initials = authUser?.name
     ?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) ?? "U";
 
@@ -117,7 +115,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop links */}
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
@@ -136,6 +134,7 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+
             {/* Search */}
             <button className="hidden sm:flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-white/5">
               <Search size={18} />
@@ -155,14 +154,13 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Auth button / dropdown */}
+            {/* Auth */}
             {authUser ? (
               <div className="relative" ref={dropRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-dark-700 hover:bg-dark-600 border border-dark-600 hover:border-brand-500/40 transition-all duration-200"
                 >
-                  {/* Avatar */}
                   {authUser.avatar ? (
                     <img src={authUser.avatar} alt={authUser.name} className="w-6 h-6 rounded-full object-cover" />
                   ) : (
@@ -170,13 +168,11 @@ export default function Navbar() {
                       {initials}
                     </div>
                   )}
-                  {/* Label */}
                   <span className="hidden sm:block text-sm font-medium font-body max-w-[120px] truncate">
-                    {isAdmin ? (
-                      <span className="text-brand-400">{authUser.email}</span>
-                    ) : (
-                      <span className="text-slate-200">{authUser.name}</span>
-                    )}
+                    {isAdmin
+                      ? <span className="text-brand-400">{authUser.email}</span>
+                      : <span className="text-slate-200">{authUser.name}</span>
+                    }
                   </span>
                   <ChevronDown
                     size={14}
@@ -188,7 +184,7 @@ export default function Navbar() {
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-dark-800 border border-dark-600 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
 
-                    {/* User info header */}
+                    {/* User info */}
                     <div className="px-4 py-3 border-b border-dark-700 bg-dark-900/50">
                       <p className="text-xs text-slate-500 uppercase tracking-wider">{authUser.role}</p>
                       <p className="text-sm font-semibold text-white truncate mt-0.5">{authUser.name}</p>
@@ -196,8 +192,9 @@ export default function Navbar() {
                     </div>
 
                     <div className="p-1.5">
-                      {isAdmin ? (
-                        /* Admin menu */
+
+                      {/* Admin links — admin/moderator only */}
+                      {isAdmin && (
                         <>
                           {adminLinks.map(({ href, label, icon: Icon }) => (
                             <Link
@@ -210,16 +207,11 @@ export default function Navbar() {
                             </Link>
                           ))}
                           <div className="my-1 border-t border-dark-700" />
-                          <Link
-                            href="/users/profile"
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-all group"
-                          >
-                            <User size={15} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
-                            My Profile
-                          </Link>
                         </>
-                      ) : (
-                        /* Customer menu */
+                      )}
+
+                      {/* Profile — customers only */}
+                      {!isAdmin && (
                         <Link
                           href="/users/profile"
                           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-all group"
@@ -242,7 +234,6 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              /* Login button */
               <Link
                 href="/auth/login"
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white text-sm font-semibold font-body transition-all duration-200 shadow-lg shadow-brand-500/20"
@@ -291,9 +282,10 @@ export default function Navbar() {
               />
             </div>
 
-            {/* Mobile auth section */}
+            {/* Mobile auth */}
             {authUser ? (
               <div className="mt-2 bg-dark-700 rounded-xl overflow-hidden">
+
                 {/* User info */}
                 <div className="px-4 py-3 border-b border-dark-600 flex items-center gap-3">
                   {authUser.avatar ? (
@@ -309,7 +301,7 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* Admin links in mobile */}
+                {/* Admin links — admin/moderator only */}
                 {isAdmin && adminLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
@@ -322,14 +314,19 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                <Link
-                  href="/users/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 border-b border-dark-600 transition-all"
-                >
-                  <User size={15} className="text-slate-500" />
-                  My Profile
-                </Link>
+                {/* Profile — customers only */}
+                {!isAdmin && (
+                  <Link
+                    href="/users/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 border-b border-dark-600 transition-all"
+                  >
+                    <User size={15} className="text-slate-500" />
+                    My Profile
+                  </Link>
+                )}
+
+                {/* Logout */}
                 <button
                   onClick={logout}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-all"

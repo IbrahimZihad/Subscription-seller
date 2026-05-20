@@ -11,7 +11,6 @@ exports.placeOrder = async (req, res) => {
     if (!items || !items.length) return res.status(400).json({ success: false, message: "No items in order" });
     if (!customerName || !customerPhone) return res.status(400).json({ success: false, message: "Name and phone are required" });
 
-    // Validate items & calculate subtotal
     let subtotal = 0;
     const lineItems = [];
 
@@ -38,7 +37,6 @@ exports.placeOrder = async (req, res) => {
       lineItems.push({ productId: product.id, planId: item.planId || null, productName: product.name, planName, unitPrice, quantity: qty, subtotal: lineTotal });
     }
 
-    // Coupon
     let discountAmount = 0;
     let coupon         = null;
 
@@ -64,7 +62,6 @@ exports.placeOrder = async (req, res) => {
 
     const total = subtotal - discountAmount;
 
-    // Create order
     const order = await Order.create({
       orderNumber:   "SBD-" + Date.now().toString().slice(-8),
       userId:        req.user?.id || null,
@@ -78,16 +75,12 @@ exports.placeOrder = async (req, res) => {
       notes:         notes || null,
     });
 
-    // Order items
     for (const item of lineItems) await OrderItem.create({ orderId: order.id, ...item });
 
-    // Increment coupon usage
     if (coupon) await coupon.increment("usedCount");
 
-    // Increment product sales count
     for (const item of lineItems) await Product.increment("salesCount", { by: item.quantity, where: { id: item.productId } });
 
-    // Create payment record for manual methods
     if (paymentMethod && paymentMethod !== "sslcommerz" && transactionId) {
       await Payment.create({ orderId: order.id, method: paymentMethod, amount: total, currency: "BDT", status: "pending", transactionId, senderNumber: customerPhone });
     }
@@ -159,7 +152,10 @@ exports.getOrder = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status, deliveryData, adminNotes, paymentStatus } = req.body;
-    const order = await Order.findByPk(req.params.id);
+
+    const order = await Order.findByPk(req.params.id, {
+      include: [{ model: Payment, as: "payment" }],
+    });
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
     const updates = {};
@@ -169,6 +165,37 @@ exports.updateOrderStatus = async (req, res) => {
     if (adminNotes)    updates.adminNotes = adminNotes;
 
     await order.update(updates);
+
+    // Sync payments table
+    if (paymentStatus) {
+      const paymentStatusMap = {
+        paid:     "success",
+        refunded: "refunded",
+        failed:   "failed",
+        unpaid:   "pending",
+      };
+      const newPaymentStatus = paymentStatusMap[paymentStatus] || "pending";
+
+      if (order.payment) {
+        await order.payment.update({
+          status: newPaymentStatus,
+          ...(paymentStatus === "paid"     && { paidAt: new Date() }),
+          ...(paymentStatus === "refunded" && { refundedAt: new Date() }),
+        });
+      } else if (paymentStatus === "paid") {
+        await Payment.create({
+          orderId:       order.id,
+          method:        order.paymentMethod || "bank",
+          amount:        order.total,
+          currency:      "BDT",
+          status:        "success",
+          transactionId: order.transactionId || null,
+          senderNumber:  order.customerPhone,
+          paidAt:        new Date(),
+        });
+      }
+    }
+
     return res.json({ success: true, message: "Order updated", data: order });
   } catch (error) {
     console.error("Update order status error:", error);
