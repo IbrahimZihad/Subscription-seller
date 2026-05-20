@@ -22,6 +22,14 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
     paranoid: true,
     indexes: [{ fields: ["email"] }, { fields: ["firebase_uid"] }, { fields: ["role"] }],
+    defaultScope: {
+      attributes: { exclude: [] }, // no default exclusion; toJSON handles it
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ["password"] }, // force-include password
+      },
+    },
   });
 
   User.prototype.toJSON = function () {

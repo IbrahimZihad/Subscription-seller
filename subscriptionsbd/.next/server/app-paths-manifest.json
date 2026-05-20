@@ -1,5 +1,8 @@
 {
-  "/page": "app/page.js",
-  "/about/page": "app/about/page.js",
-  "/contact/page": "app/contact/page.js"
+  "/auth/login/page": "app/auth/login/page.js",
+  "/users/profile/page": "app/users/profile/page.js",
+  "/blog/page": "app/blog/page.js",
+  "/admin/admin-dashboard/page": "app/admin/admin-dashboard/page.js",
+  "/admin/manage-products/page": "app/admin/manage-products/page.js",
+  "/admin/manage-blogs/page": "app/admin/manage-blogs/page.js"
 }

@@ -12,8 +12,6 @@ const signJwt = (user) =>
 
 /**
  * POST /api/auth/firebase-login
- * Called from Next.js after Firebase Auth sign-in (Google or email/password).
- * Syncs the Firebase user into our MySQL users table and returns our own JWT.
  */
 exports.firebaseLogin = async (req, res) => {
   try {
@@ -27,7 +25,6 @@ exports.firebaseLogin = async (req, res) => {
     let user = await User.findOne({ where: { firebaseUid: decoded.uid } });
 
     if (!user) {
-      // Check if email exists already (linked account)
       user = await User.findOne({ where: { email: decoded.email } });
 
       if (user) {
@@ -81,9 +78,15 @@ exports.adminLogin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
-    const user = await User.scope("withPassword").findOne({ where: { email } }).catch(() =>
-      User.findOne({ where: { email } })
-    );
+    // ✅ Fetch user with password field explicitly included (bypasses toJSON stripping)
+    const user = await User.findOne({
+      where: { email },
+      attributes: [
+        "id", "name", "email", "phone", "password",
+        "role", "avatar", "provider", "isEmailVerified",
+        "isActive", "lastLoginAt", "paymentPhone",
+      ],
+    });
 
     if (!user) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -94,11 +97,15 @@ exports.adminLogin = async (req, res) => {
     if (!user.isActive) {
       return res.status(403).json({ success: false, message: "Account suspended" });
     }
-    if (!user.password) {
+
+    // ✅ Read raw password from dataValues before toJSON strips it
+    const rawPassword = user.getDataValue("password");
+
+    if (!rawPassword) {
       return res.status(400).json({ success: false, message: "This account uses Google login" });
     }
 
-    const valid = await bcrypt.compare(password, user.password);
+    const valid = await bcrypt.compare(password, rawPassword);
     if (!valid) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
@@ -108,7 +115,7 @@ exports.adminLogin = async (req, res) => {
     return res.json({
       success: true,
       message: "Admin login successful",
-      user,
+      user,  // toJSON will strip password from response automatically ✅
       token: signJwt(user),
     });
   } catch (error) {
@@ -146,7 +153,6 @@ exports.updateProfile = async (req, res) => {
 
 /**
  * POST /api/auth/change-password
- * Only for email/password users (non-Firebase social login).
  */
 exports.changePassword = async (req, res) => {
   try {
@@ -158,17 +164,19 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "New password must be at least 8 characters" });
     }
 
-    // Re-fetch with password field
+    // ✅ Same fix — use getDataValue to read password before toJSON strips it
     const user = await User.findOne({
       where: { id: req.user.id },
       attributes: { include: ["password"] },
     });
 
-    if (!user.password) {
+    const rawPassword = user.getDataValue("password");
+
+    if (!rawPassword) {
       return res.status(400).json({ success: false, message: "Password change not available for social login users" });
     }
 
-    const valid = await bcrypt.compare(currentPassword, user.password);
+    const valid = await bcrypt.compare(currentPassword, rawPassword);
     if (!valid) {
       return res.status(400).json({ success: false, message: "Current password is incorrect" });
     }
