@@ -7,6 +7,8 @@ const cors      = require("cors");
 const helmet    = require("helmet");
 const morgan    = require("morgan");
 const rateLimit = require("express-rate-limit");
+const hpp       = require("hpp");              // ← KEPT (still valid)
+// xss-clean REMOVED ← no longer needed
 
 const { sequelize }   = require("./models");
 const { initFirebase } = require("./firebase/admin");
@@ -27,19 +29,20 @@ app.use(cors({
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(hpp());   // ← prevents HTTP parameter pollution
 
 // ── Rate limiting ─────────────────────────────────────────────
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,       
-  max: 200,               
+  windowMs: 1000,          // 1 second
+  max:      5,             // 5 requests per second
   message:  { success: false, message: "Too many requests — please try again later." },
   standardHeaders: true,
   legacyHeaders:   false,
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  
-  max: 20,                    
+  windowMs: 15 * 60 * 1000,
+  max:      20,
   message:  { success: false, message: "Too many login attempts — try again in 15 minutes." },
 });
 
@@ -79,11 +82,9 @@ app.use((err, req, res, next) => {
 // ── Start server ──────────────────────────────────────────────
 const start = async () => {
   try {
-    // Test Aiven MySQL connection
     await sequelize.authenticate();
     console.log("✅ Aiven MySQL connected —", process.env.DB_HOST);
 
-    // Initialize Firebase Admin SDK
     initFirebase();
 
     app.listen(PORT, () => {
