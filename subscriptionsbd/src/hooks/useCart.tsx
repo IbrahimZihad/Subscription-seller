@@ -36,6 +36,9 @@ const getProductId = (p: Product) => (p as any)._id || p.id;
 const getKey = (productId: string, planId?: string) =>
   planId ? `${productId}-${planId}` : productId;
 
+const getItemKey = (item: CartItem) =>
+  getKey(getProductId(item.product), item.plan?.id);
+
 // -----------------------------
 // REDUCER
 // -----------------------------
@@ -46,13 +49,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const productId = getProductId(action.product);
       const key = getKey(productId, action.plan?.id);
 
-      const existing = state.items.find((i) => i.key === key);
+      const existing = state.items.find((i) => getItemKey(i) === key);
 
       if (existing) {
         return {
           ...state,
           items: state.items.map((i) =>
-            i.key === key
+            getItemKey(i) === key
               ? { ...i, quantity: i.quantity + 1 }
               : i
           ),
@@ -64,7 +67,6 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         items: [
           ...state.items,
           {
-            key,
             product: action.product,
             plan: action.plan,
             quantity: 1,
@@ -77,7 +79,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const key = getKey(action.productId, action.planId);
       return {
         ...state,
-        items: state.items.filter((i) => i.key !== key),
+        items: state.items.filter((i) => getItemKey(i) !== key),
       };
     }
 
@@ -85,7 +87,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: state.items.map((i) =>
-          i.key === action.key
+          getItemKey(i) === action.key
             ? { ...i, quantity: action.quantity }
             : i
         ),

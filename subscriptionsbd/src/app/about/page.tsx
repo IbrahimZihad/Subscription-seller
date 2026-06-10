@@ -9,6 +9,7 @@ import {
   Quote,
 } from "lucide-react";
 import { fetchAPI } from "@/lib/api";
+export const dynamic = 'force-dynamic';
 
 export const metadata = { title: "About Us — Subscriptions BD" };
 

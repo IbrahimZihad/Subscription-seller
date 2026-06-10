@@ -1,4 +1,3 @@
-# Subscriptions BD — Backend API v2.0
 
 Express.js + MySQL (Aiven) + Sequelize + Firebase Auth + SSLCommerz
 

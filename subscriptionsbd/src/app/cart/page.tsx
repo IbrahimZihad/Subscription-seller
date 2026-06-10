@@ -275,7 +275,7 @@ export default function CartPage() {
 
             {/* Items */}
             <div className="lg:col-span-2 space-y-4">
-              {state.items.map((item) => {
+              {state.items.map((item: any) => {
                 const product = item.product;
 
                 const name =
